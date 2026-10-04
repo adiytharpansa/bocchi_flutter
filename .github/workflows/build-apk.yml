@@ -1,0 +1,54 @@
+name: Build APK
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build release APK
+        run: flutter build apk --release
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bocchi-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload APK to workflow summary
+        run: |
+          echo "## APK berhasil dibuat" >> "$GITHUB_STEP_SUMMARY"
+          echo "Artifact: bocchi-release-apk" >> "$GITHUB_STEP_SUMMARY"
+          echo "File: app-release.apk" >> "$GITHUB_STEP_SUMMARY"
+
+      
