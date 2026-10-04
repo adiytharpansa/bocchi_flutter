@@ -40,10 +40,16 @@ jobs:
       - name: Add namespace to legacy plugin
         shell: bash
         run: |
-          plugin_gradle="$HOME/.pub-cache/hosted/pub.dev/auto_orientation-2.3.1/android/build.gradle"
-          if [ -f "$plugin_gradle" ] && ! grep -q "namespace" "$plugin_gradle"; then
-            sed -i '/android {/a\\    namespace "com.gutech.auto_orientation"' "$plugin_gradle"
-          fi
+          declare -A plugin_namespaces=(
+            ["auto_orientation-2.3.1"]="com.gutech.auto_orientation"
+            ["flutter_displaymode-0.5.0"]="com.jrai.flutter_displaymode"
+          )
+          for plugin in "${!plugin_namespaces[@]}"; do
+            plugin_gradle="$HOME/.pub-cache/hosted/pub.dev/$plugin/android/build.gradle"
+            if [ -f "$plugin_gradle" ] && ! grep -q "namespace" "$plugin_gradle"; then
+              sed -i "/android {/a\\    namespace \"${plugin_namespaces[$plugin]}\"" "$plugin_gradle"
+            fi
+          done
 
       - name: Build release APK
         run: flutter build apk --release
