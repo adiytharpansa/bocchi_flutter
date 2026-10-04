@@ -34,6 +34,9 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Validate dependency graph
+        run: flutter pub deps --style=compact
+
       - name: Add namespace to legacy plugin
         shell: bash
         run: |
